@@ -3,7 +3,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters, Updater
 import requests
 
 
-TOKEN = '6229504155:AAF3hNPFgntyXtI4BanE1D-we8l_DVILkQE'
+TOKEN = 'YOUR_BOT_TOKEN'
 bot = telegram.Bot(token=TOKEN)
 
 
