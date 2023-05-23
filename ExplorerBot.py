@@ -2,7 +2,8 @@ import telegram
 from telegram.ext import CommandHandler, MessageHandler, Filters, Updater
 import requests
 
-TOKEN = 'YOU_BOT_TOKEN'
+
+TOKEN = '6229504155:AAF3hNPFgntyXtI4BanE1D-we8l_DVILkQE'
 bot = telegram.Bot(token=TOKEN)
 
 
@@ -16,7 +17,7 @@ def salary(update, context):
     words = text.split(', ')
     if len(words) != 2:
         context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='Неверный формат запроса. Напиши название профессии и региона через пробел.')
+                                 text='Неверный формат запроса. Напиши название профессии и региона через запятую.')
         return
     profession = words[0]
     user_region = words[1]
@@ -28,18 +29,14 @@ def salary(update, context):
         for i in range(len(region['areas'])):
             if len(region['areas'][i]['areas']) != 0 and (region['id'] == '113'):
                 for j in range(len(region['areas'][i]['areas'])):
-                    areas.append([region['id'],
-                                  region['name'],
-                                  region['areas'][i]['areas'][j]['id'],
+                    areas.append([region['areas'][i]['areas'][j]['id'],
                                   region['areas'][i]['areas'][j]['name']])
             if len(region['areas'][i]['areas']) == 0 and (region['id'] == '113'):
-                areas.append([region['id'],
-                              region['name'],
-                              region['areas'][i]['id'],
+                areas.append([region['areas'][i]['id'],
                               region['areas'][i]['name']])
     for area in areas:
-        if user_region == area[3]:
-            territory = area[2]
+        if user_region == area[1]:
+            territory = area[0]
 
     all_salaries = []
     params = {'text': profession, 'only_with_salary': True, 'area': territory}
@@ -47,6 +44,7 @@ def salary(update, context):
     if response2.status_code != 200:
         context.bot.send_message(chat_id=update.message.chat_id, text="Ошибка при получении данных с сайта hh.ru")
         return
+
     i = 0
     if response2.ok:
         vacancies = response2.json()
@@ -62,7 +60,10 @@ def salary(update, context):
                         i += 1
                     all_salaries.append(salary['from'] + salary['to'])
 
-    average_salary = (sum(all_salaries) / (2 * len(all_salaries) - 13))
+    if i <= 0:
+        context.bot.send_message(chat_id=update.message.chat_id, text=f'Невозможно получить данные по профессии "{profession}" в регионе "{user_region}".')
+
+    average_salary = (sum(all_salaries) / (2 * len(all_salaries) - i))
     context.bot.send_message(chat_id=update.message.chat_id,
                              text=f'Средняя зарплата по профессии "{profession}" в регионе "{user_region}" составляет {average_salary:.0f} рублей')
 
@@ -79,3 +80,4 @@ def main():
 if __name__ == '__main__':
     print("Running....")
     main()
+    
